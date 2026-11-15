@@ -1,15 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:sayur_hub/core/mock/mock_produce_data.dart';
+import 'package:sayur_hub/core/models/product.dart';
 import 'package:sayur_hub/core/theme/app_colors.dart';
+import 'package:sayur_hub/shared/widgets/product_card.dart';
+import 'package:sayur_hub/shared/widgets/quantity_counter_widget.dart';
 
-/// Halaman Beranda Utama aplikasi SayurHub
-/// Menggunakan kanvas Scaffold lengkap dengan AppBar, Drawer, dan FloatingActionButton
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _totalCartItems = 0;
+  int _demoQuantity = 1;
+
+  void _handleAddToCart(Product product) {
+    setState(() {
+      _totalCartItems++;
+    });
+
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${product.name} berhasil ditambahkan ke keranjang!'),
+        backgroundColor: AppColors.primaryGreen,
+        duration: const Duration(seconds: 1),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Membaca informasi ukuran layar perangkat menggunakan BuildContext
-    final double screenWidth = MediaQuery.of(context).size.width;
+    final List<Product> sampleProducts = MockProduceData.products;
 
     return Scaffold(
       appBar: AppBar(
@@ -17,16 +41,7 @@ class HomeScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_none_rounded),
-            tooltip: 'Notifikasi Panen',
-            onPressed: () {
-              // Menampilkan pesan snackbar memanfaatkan context
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Belum ada notifikasi panen baru.'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            },
+            onPressed: () {},
           ),
         ],
       ),
@@ -35,58 +50,39 @@ class HomeScreen extends StatelessWidget {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: const BoxDecoration(
-                color: AppColors.primaryGreen,
-              ),
+              decoration: const BoxDecoration(color: AppColors.primaryGreen),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: const [
                   CircleAvatar(
-                    radius: 28,
+                    radius: 26,
                     backgroundColor: Colors.white,
-                    child: Icon(Icons.person_rounded, size: 36, color: AppColors.primaryGreen),
+                    child: Icon(Icons.person_rounded, size: 32, color: AppColors.primaryGreen),
                   ),
-                  SizedBox(height: 10),
-                  Text(
-                    'Siti Nurhaliza',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  Text(
-                    'siti@smkrpl.sch.id',
-                    style: TextStyle(color: Colors.white70, fontSize: 12),
-                  ),
+                  SizedBox(height: 8),
+                  Text('Siti Nurhaliza', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  Text('siti@smkrpl.sch.id', style: TextStyle(color: Colors.white70, fontSize: 12)),
                 ],
               ),
             ),
             ListTile(
               leading: const Icon(Icons.home_rounded, color: AppColors.primaryGreen),
-              title: const Text('Beranda SayurHub'),
-              onTap: () => Navigator.pop(context),
-            ),
-            ListTile(
-              leading: const Icon(Icons.history_rounded),
-              title: const Text('Riwayat Transaksi'),
-              onTap: () => Navigator.pop(context),
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.settings_outlined),
-              title: const Text('Pengaturan'),
+              title: const Text('Beranda'),
               onTap: () => Navigator.pop(context),
             ),
           ],
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Banner Selamat Datang
+            // Banner Sambutan
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(20.0),
+              padding: const EdgeInsets.all(16.0),
               decoration: BoxDecoration(
                 color: AppColors.primaryGreen.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(16),
@@ -97,36 +93,33 @@ class HomeScreen extends StatelessWidget {
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+                      children: const [
                         Text(
-                          'Panen Pagi Hari Ini!',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                color: AppColors.primaryGreen,
-                              ),
+                          'Sayur Segar Panen Pagi!',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primaryGreen),
                         ),
-                        const SizedBox(height: 6),
-                        const Text(
-                          'Sayuran hijau organik dipetik pukul 05.00 WIB langsung dari kebun Lembang.',
-                          style: TextStyle(fontSize: 13, color: AppColors.textMuted),
+                        SizedBox(height: 4),
+                        Text(
+                          'Dipetik langsung dari kebun hidroponik mitra Lembang.',
+                          style: TextStyle(fontSize: 12, color: AppColors.textMuted),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  const Icon(Icons.eco_rounded, size: 48, color: AppColors.primaryGreen),
+                  const Icon(Icons.eco_rounded, size: 40, color: AppColors.primaryGreen),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
-            // Indikator Lebar Layar (Demo BuildContext MediaQuery)
+            // Demo Interaksi StatefulWidget: QuantityCounterWidget
             Text(
-              'Informasi Layar:',
-              style: Theme.of(context).textTheme.titleLarge,
+              'Uji Coba Kontrol Kuantitas (StatefulWidget):',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 15),
             ),
             const SizedBox(height: 8),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
@@ -135,29 +128,45 @@ class HomeScreen extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Lebar Layar Smartphone:'),
-                  Text(
-                    '${screenWidth.toStringAsFixed(1)} dp',
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryGreen),
+                  Text('Kuantitas Uji: $_demoQuantity kg', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  QuantityCounterWidget(
+                    maxStock: 10,
+                    initialQuantity: _demoQuantity,
+                    onQuantityChanged: (newVal) {
+                      setState(() {
+                        _demoQuantity = newVal;
+                      });
+                    },
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 24),
 
-            // Informasi Modul Selanjutnya
+            // Bagian Katalog Produk (Komponen Reusable ProductCard)
             Text(
-              'Status Pengembangan:',
-              style: Theme.of(context).textTheme.titleLarge,
+              'Komoditas Pilihan Hari Ini:',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 17),
             ),
-            const SizedBox(height: 8),
-            const Card(
-              elevation: 0,
-              color: Colors.white,
-              child: ListTile(
-                leading: Icon(Icons.check_circle_rounded, color: AppColors.primaryGreen),
-                title: Text('Modul 08 Selesai: Arsitektur & Scaffold Siap'),
-                subtitle: Text('Siap membangun kartu produk mandiri pada Modul 09.'),
+            const SizedBox(height: 12),
+
+            // Menampilkan Kartu Produk Berdampingan
+            SizedBox(
+              height: 240,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: sampleProducts.length,
+                separatorBuilder: (context, index) => const SizedBox(width: 12),
+                itemBuilder: (context, index) {
+                  final product = sampleProducts[index];
+                  return SizedBox(
+                    width: 165,
+                    child: ProductCard(
+                      product: product,
+                      onAddToCart: () => _handleAddToCart(product),
+                    ),
+                  );
+                },
               ),
             ),
           ],
@@ -166,13 +175,13 @@ class HomeScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Keranjang belanja siap diintegrasikan pada Modul 14!'),
+            SnackBar(
+              content: Text('Total belanjaan saat ini: $_totalCartItems item'),
             ),
           );
         },
         icon: const Icon(Icons.shopping_cart_rounded),
-        label: const Text('Keranjang (0)'),
+        label: Text('Keranjang ($_totalCartItems)'),
       ),
     );
   }
