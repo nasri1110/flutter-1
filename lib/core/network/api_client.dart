@@ -1,9 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:sayur_hub/core/mock/mock_produce_data.dart';
+import 'package:sayur_hub/core/services/secure_storage_service.dart';
 
 /// Klien jaringan HTTP resmi aplikasi SayurHub menggunakan pustaka Dio.
-/// Mengonfigurasi BaseOptions, batas waktu (timeout), header, serta interceptor logging dan mock fallback.
+/// Mengonfigurasi BaseOptions, batas waktu (timeout), header, serta interceptor logging, JWT auth, dan mock fallback.
 class ApiClient {
   ApiClient._();
 
@@ -28,11 +29,19 @@ class ApiClient {
       ),
     );
 
-    // Menambahkan Interceptor untuk logging dan simulasi respon REST API
+    // Menambahkan Interceptor untuk logging, auth token otomatis, dan simulasi respon REST API
     dio.interceptors.add(
       InterceptorsWrapper(
-        onRequest: (options, handler) {
+        onRequest: (options, handler) async {
           debugPrint('🌐 [HTTP REQUEST] ${options.method} --> ${options.uri}');
+
+          // Auth Interceptor: Otomatis menyematkan header Authorization Bearer jika token tersimpan
+          final token = await SecureStorageService.instance.getToken();
+          if (token != null && token.isNotEmpty) {
+            options.headers['Authorization'] = 'Bearer $token';
+            debugPrint('🔑 [AUTH INTERCEPTOR] Bearer JWT Token disematkan ke Header');
+          }
+
           return handler.next(options);
         },
         onResponse: (response, handler) {
@@ -42,12 +51,29 @@ class ApiClient {
         onError: (DioException e, handler) async {
           debugPrint('⚠️ [HTTP ERROR] ${e.type}: ${e.message} pada ${e.requestOptions.uri}');
 
+          // Penanganan HTTP 401 Unauthorized (Token expired -> bersihkan auth)
+          if (e.response?.statusCode == 401) {
+            debugPrint('🚨 [AUTH ERROR] Token JWT kedaluwarsa atau tidak valid (HTTP 401)!');
+            await SecureStorageService.instance.clearAuth();
+          }
+
           // Mekanisme Simulasi Fallback Cerdas:
           // Jika server online tidak dapat dijangkau (misal di sandbox praktikum tanpa koneksi luar),
           // kembalikan data mock REST API berspesifikasi industri secara mulus.
           if (e.type == DioExceptionType.connectionError ||
               e.type == DioExceptionType.connectionTimeout ||
               e.type == DioExceptionType.unknown) {
+            final mockResponse = _generateMockResponse(e.requestOptions);
+            if (mockResponse != null) {
+              return handler.resolve(mockResponse);
+            }
+          }
+
+          return handler.next(e);
+        },
+      ),
+    );
+  }
             final mockResponse = _generateMockResponse(e.requestOptions);
             if (mockResponse != null) {
               return handler.resolve(mockResponse);

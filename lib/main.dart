@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:sayur_hub/core/network/api_client.dart';
+import 'package:sayur_hub/core/providers/auth_provider.dart';
 import 'package:sayur_hub/core/providers/cart_provider.dart';
 import 'package:sayur_hub/core/providers/product_catalog_provider.dart';
 import 'package:sayur_hub/core/providers/wishlist_provider.dart';
@@ -18,14 +20,30 @@ void main() {
 }
 
 /// Root Widget aplikasi SayurHub yang diinjeksi dengan MultiProvider
-/// Mengelola sinkronisasi data lokal (SQLite) dan data daring (REST API)
-class SayurHubRootApp extends StatelessWidget {
+/// Mengelola sinkronisasi data lokal (SQLite), data daring (REST API), dan Route Guards Auth
+class SayurHubRootApp extends StatefulWidget {
   const SayurHubRootApp({super.key});
+
+  @override
+  State<SayurHubRootApp> createState() => _SayurHubRootAppState();
+}
+
+class _SayurHubRootAppState extends State<SayurHubRootApp> {
+  late final AuthProvider _authProvider;
+  late final GoRouter _router;
+
+  @override
+  void initState() {
+    super.initState();
+    _authProvider = AuthProvider()..checkAuthStatus();
+    _router = AppRouter.createRouter(_authProvider);
+  }
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider.value(value: _authProvider),
         ChangeNotifierProvider(
           create: (_) => CartProvider()..initializeFromDatabase(),
         ),
@@ -40,7 +58,7 @@ class SayurHubRootApp extends StatelessWidget {
         title: 'SayurHub',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
-        routerConfig: AppRouter.router,
+        routerConfig: _router,
       ),
     );
   }
