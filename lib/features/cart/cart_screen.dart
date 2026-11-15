@@ -34,6 +34,19 @@ class CartScreen extends StatelessWidget {
       ),
       body: Consumer<CartProvider>(
         builder: (context, cart, child) {
+          if (cart.isLoading) {
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(color: AppColors.primaryGreen),
+                  SizedBox(height: 16),
+                  Text('Memuat keranjang sayur...'),
+                ],
+              ),
+            );
+          }
+
           if (cart.isEmpty) {
             return _buildEmptyCartView(context);
           }

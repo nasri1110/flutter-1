@@ -6,10 +6,13 @@ import 'package:sayur_hub/core/routes/app_router.dart';
 import 'package:sayur_hub/core/theme/app_theme.dart';
 
 void main() {
+  // Memastikan binding Flutter siap sebelum inisialisasi basis data dan preferensi
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const SayurHubRootApp());
 }
 
 /// Root Widget aplikasi SayurHub yang diinjeksi dengan MultiProvider
+/// Secara otomatis memuat data offline SQLite saat aplikasi dinyalakan
 class SayurHubRootApp extends StatelessWidget {
   const SayurHubRootApp({super.key});
 
@@ -17,8 +20,12 @@ class SayurHubRootApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => CartProvider()),
-        ChangeNotifierProvider(create: (_) => WishlistProvider()),
+        ChangeNotifierProvider(
+          create: (_) => CartProvider()..initializeFromDatabase(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => WishlistProvider()..initializeFromDatabase(),
+        ),
       ],
       child: MaterialApp.router(
         title: 'SayurHub',

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:sayur_hub/core/providers/cart_provider.dart';
 import 'package:sayur_hub/core/theme/app_colors.dart';
+import 'package:sayur_hub/core/utils/preferences_helper.dart';
 import 'package:sayur_hub/core/utils/price_calculator.dart';
 import 'package:sayur_hub/shared/widgets/custom_button.dart';
 
@@ -38,6 +39,18 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     _phoneController = TextEditingController(text: '081234567890');
     _addressController = TextEditingController(text: 'Jl. Merdeka No. 45, Bandung Barat');
     _notesController = TextEditingController();
+    _loadSavedPreferences();
+  }
+
+  Future<void> _loadSavedPreferences() async {
+    final courier = await PreferencesHelper.getPreferredCourier();
+    final insurance = await PreferencesHelper.isFreshInsuranceDefault();
+    if (mounted) {
+      setState(() {
+        _selectedCourier = courier;
+        _useFreshGuarantee = insurance;
+      });
+    }
   }
 
   @override
@@ -81,6 +94,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     setState(() {
       _isSubmitting = true;
     });
+
+    // Simpan preferensi kurir dan asuransi ke SharedPreferences
+    await PreferencesHelper.setPreferredCourier(_selectedCourier ?? 'INSTANT');
+    await PreferencesHelper.setFreshInsuranceDefault(_useFreshGuarantee);
 
     // Simulasi pengiriman order ke backend selama 2 detik
     await Future.delayed(const Duration(seconds: 2));
