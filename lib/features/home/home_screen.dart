@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:sayur_hub/core/mock/mock_produce_data.dart';
 import 'package:sayur_hub/core/models/product.dart';
 import 'package:sayur_hub/core/providers/cart_provider.dart';
+import 'package:sayur_hub/core/providers/product_catalog_provider.dart';
 import 'package:sayur_hub/core/providers/wishlist_provider.dart';
 import 'package:sayur_hub/core/theme/app_colors.dart';
-import 'package:sayur_hub/core/utils/catalog_processor.dart';
 import 'package:sayur_hub/core/utils/price_calculator.dart';
 import 'package:sayur_hub/shared/widgets/category_pill.dart';
 import 'package:sayur_hub/shared/widgets/product_card.dart';
+import 'package:sayur_hub/shared/widgets/product_card_shimmer.dart';
 import 'package:sayur_hub/shared/widgets/promo_banner.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -20,10 +20,31 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String _selectedCategory = 'Semua';
+  bool _isSearching = false;
+  late final TextEditingController _searchController;
+
+  static const List<String> _categories = [
+    'Semua',
+    'Sayuran Daun',
+    'Sayuran Buah',
+    'Sayuran Umbi',
+    'Buah Segar',
+    'Rempah & Herbal',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   void _handleAddToCart(Product product) {
-    // Memanggil aksi bisnis addItem pada CartProvider
     context.read<CartProvider>().addItem(product);
 
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -43,31 +64,39 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Product> allProducts = MockProduceData.products;
-
-    // Mengambil seluruh kategori unik dan menyematkan filter 'Semua' di awal
-    final List<String> categories = [
-      'Semua',
-      ...CatalogProcessor.getProduceCategories(allProducts),
-    ];
-
-    // Menyaring daftar produk sesuai kategori yang sedang dipilih pengguna
-    final List<Product> displayedProducts =
-        CatalogProcessor.filterProductsByCategory(
-      products: allProducts,
-      categoryName: _selectedCategory,
-    );
+    final catalogProvider = context.watch<ProductCatalogProvider>();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SayurHub — Pasar Segar'),
+        title: _isSearching
+            ? TextField(
+                controller: _searchController,
+                autofocus: true,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  hintText: 'Ketik nama sayur / buah...',
+                  hintStyle: TextStyle(color: Colors.white70),
+                  border: InputBorder.none,
+                ),
+                onChanged: (val) {
+                  context.read<ProductCatalogProvider>().search(val);
+                },
+              )
+            : const Text('SayurHub — Pasar Segar'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search_rounded),
-            tooltip: 'Cari Sayuran',
-            onPressed: () {},
+            icon: Icon(_isSearching ? Icons.close_rounded : Icons.search_rounded),
+            tooltip: _isSearching ? 'Tutup Pencarian' : 'Cari Sayuran',
+            onPressed: () {
+              setState(() {
+                _isSearching = !_isSearching;
+                if (!_isSearching) {
+                  _searchController.clear();
+                  context.read<ProductCatalogProvider>().search('');
+                }
+              });
+            },
           ),
-          // Badge Keranjang Reaktif di AppBar menggunakan Consumer
           Consumer<CartProvider>(
             builder: (context, cart, child) {
               return Badge(
@@ -118,7 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ListTile(
               leading: const Icon(Icons.store_mall_directory_rounded,
                   color: AppColors.primaryGreen),
-              title: const Text('Katalog Utama'),
+              title: const Text('Katalog Utama (REST API)'),
               onTap: () => Navigator.pop(context),
             ),
             Consumer<WishlistProvider>(
@@ -169,106 +198,92 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisCount = 3;
           }
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 12),
-                const PromoBanner(
-                  title: 'PANEN RAYA PETANI LEMBANG',
-                  subtitle:
-                      'Dapatkan potongan langsung 10% untuk pesanan minimal Rp 50.000.',
-                ),
-                const SizedBox(height: 20),
-
-                const Text(
-                  'Kategori Pilihan',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textDark,
+          // RefreshIndicator untuk mendukung fitur Pull-to-Refresh
+          return RefreshIndicator(
+            color: AppColors.primaryGreen,
+            onRefresh: () async {
+              await context.read<ProductCatalogProvider>().fetchCatalog(isRefresh: true);
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 12),
+                  const PromoBanner(
+                    title: 'PANEN RAYA PETANI LEMBANG',
+                    subtitle:
+                        'Dapatkan potongan langsung 10% untuk pesanan minimal Rp 50.000.',
                   ),
-                ),
-                const SizedBox(height: 12),
+                  const SizedBox(height: 20),
 
-                SizedBox(
-                  height: 42,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: categories.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 8),
-                    itemBuilder: (context, index) {
-                      final category = categories[index];
-                      return CategoryPill(
-                        categoryName: category,
-                        isSelected: _selectedCategory == category,
-                        onSelected: () {
-                          setState(() {
-                            _selectedCategory = category;
-                          });
-                        },
-                      );
-                    },
+                  const Text(
+                    'Kategori Pilihan',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textDark,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 20),
+                  const SizedBox(height: 12),
 
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Katalog Sayuran (${displayedProducts.length})',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textDark,
+                  SizedBox(
+                    height: 42,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _categories.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 8),
+                      itemBuilder: (context, index) {
+                        final category = _categories[index];
+                        return CategoryPill(
+                          categoryName: category,
+                          isSelected:
+                              catalogProvider.selectedCategory == category,
+                          onSelected: () {
+                            context
+                                .read<ProductCatalogProvider>()
+                                .setCategory(category);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Katalog Sayuran (${catalogProvider.products.length})',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textDark,
+                        ),
                       ),
-                    ),
-                    Text(
-                      'Filter: $_selectedCategory',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textMuted,
-                        fontStyle: FontStyle.italic,
+                      Text(
+                        'Filter: ${catalogProvider.selectedCategory}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textMuted,
+                          fontStyle: FontStyle.italic,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                if (displayedProducts.isEmpty)
-                  Container(
-                    height: 160,
-                    alignment: Alignment.center,
-                    child: const Text('Tidak ada produk pada kategori ini.'),
-                  )
-                else
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: displayedProducts.length,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: crossAxisCount,
-                      childAspectRatio: 0.68,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                    ),
-                    itemBuilder: (context, index) {
-                      final product = displayedProducts[index];
-                      return ProductCard(
-                        product: product,
-                        onAddToCart: () => _handleAddToCart(product),
-                      );
-                    },
+                    ],
                   ),
-                const SizedBox(height: 80), // Ruang ekstra untuk FAB
-              ],
+                  const SizedBox(height: 12),
+
+                  // Area Konten Dinamis REST API (Loading Shimmer, Error, Empty, atau Grid Produk)
+                  _buildCatalogBody(catalogProvider, crossAxisCount),
+
+                  const SizedBox(height: 80),
+                ],
+              ),
             ),
           );
         },
       ),
-      // FAB Reaktif yang menampilkan total item dan total belanja realtime
       floatingActionButton: Consumer<CartProvider>(
         builder: (context, cart, child) {
           if (cart.isEmpty) return const SizedBox.shrink();
@@ -284,6 +299,109 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         },
       ),
+    );
+  }
+
+  /// Membangun antarmuka katalog sesuai status jaringan REST API
+  Widget _buildCatalogBody(
+      ProductCatalogProvider catalog, int crossAxisCount) {
+    if (catalog.isLoading) {
+      // 1. Loading State: Menampilkan 6 skeleton shimmer cards
+      return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: 6,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: crossAxisCount,
+          childAspectRatio: 0.68,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+        ),
+        itemBuilder: (context, index) => const ProductCardShimmer(),
+      );
+    }
+
+    if (catalog.isError) {
+      // 2. Error State: Menampilkan pesan kesalahan dan tombol coba lagi
+      return Container(
+        padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 16),
+        alignment: Alignment.center,
+        child: Column(
+          children: [
+            const Icon(Icons.cloud_off_rounded, size: 64, color: Colors.red),
+            const SizedBox(height: 12),
+            const Text(
+              'Gagal Memuat Katalog Sayur',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textDark,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              catalog.errorMessage ?? 'Periksa koneksi internet Anda.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryGreen,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Coba Lagi'),
+              onPressed: () => catalog.retry(),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (catalog.isEmpty) {
+      // 3. Empty State: Hasil filter/pencarian tidak ditemukan
+      return Container(
+        height: 180,
+        alignment: Alignment.center,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.search_off_rounded,
+                size: 48, color: AppColors.textMuted),
+            const SizedBox(height: 10),
+            Text(
+              'Tidak ada produk ditemukan untuk "${catalog.searchQuery.isNotEmpty ? catalog.searchQuery : catalog.selectedCategory}".',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // 4. Success State: Menampilkan produk hasil fetch API
+    final displayedProducts = catalog.products;
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: displayedProducts.length,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        childAspectRatio: 0.68,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+      ),
+      itemBuilder: (context, index) {
+        final product = displayedProducts[index];
+        return ProductCard(
+          product: product,
+          onAddToCart: () => _handleAddToCart(product),
+        );
+      },
     );
   }
 }
