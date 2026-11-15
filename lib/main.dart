@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sayur_hub/core/theme/app_theme.dart';
-import 'package:sayur_hub/features/home/home_screen.dart';
+import 'package:sayur_hub/features/main_navigation_shell.dart';
 
 void main() {
   runApp(const SayurHubRootApp());
@@ -16,7 +16,7 @@ class SayurHubRootApp extends StatelessWidget {
       title: 'SayurHub',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const HomeScreen(),
+      home: const MainNavigationShell(),
     );
   }
 }
