@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:sayur_hub/core/providers/cart_provider.dart';
 import 'package:sayur_hub/core/theme/app_colors.dart';
 import 'package:sayur_hub/core/utils/price_calculator.dart';
 import 'package:sayur_hub/shared/widgets/custom_button.dart';
@@ -110,6 +112,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryGreen, foregroundColor: Colors.white),
             onPressed: () {
+              context.read<CartProvider>().clearCart();
               ctx.pop(); // Tutup dialog
               context.go('/'); // Kembali ke Beranda
             },
@@ -122,6 +125,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cart = context.watch<CartProvider>();
     // Perhitungan ongkir dinamis sesuai kurir yang dipilih
     final double courierFee = _selectedCourier == 'INSTANT'
         ? 15000.0
@@ -129,7 +133,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ? 10000.0
             : 7000.0;
     final double insuranceFee = _useFreshGuarantee ? 2000.0 : 0.0;
-    const double subtotalProduk = 60000.0;
+    final double subtotalProduk = cart.grandTotal > 0 ? cart.grandTotal : 60000.0;
     final double grandTotal = subtotalProduk + courierFee + insuranceFee;
 
     return Scaffold(

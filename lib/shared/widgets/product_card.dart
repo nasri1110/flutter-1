@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:sayur_hub/core/models/product.dart';
+import 'package:sayur_hub/core/providers/wishlist_provider.dart';
 import 'package:sayur_hub/core/theme/app_colors.dart';
 import 'package:sayur_hub/core/utils/price_calculator.dart';
 
 /// Komponen kartu produk resmi aplikasi SayurHub
-/// Menampilkan informasi visual komoditas secara ringkas dan modular
+/// Mendemonstrasikan konsumsi state reaktif WishlistProvider via Consumer
 class ProductCard extends StatelessWidget {
   final Product product;
   final VoidCallback onAddToCart;
@@ -65,7 +67,8 @@ class ProductCard extends StatelessWidget {
                       top: 8,
                       left: 8,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: AppColors.primaryGreen,
                           borderRadius: BorderRadius.circular(8),
@@ -81,31 +84,45 @@ class ProductCard extends StatelessWidget {
                       ),
                     ),
 
-                  // Badge Rating di Pojok Kanan Atas
+                  // Tombol Wishlist Reaktif (Consumer<WishlistProvider>) di Pojok Kanan Atas
                   Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.star_rounded, size: 14, color: Colors.amber),
-                          const SizedBox(width: 2),
-                          Text(
-                            product.rating.toString(),
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textDark,
+                    top: 6,
+                    right: 6,
+                    child: Consumer<WishlistProvider>(
+                      builder: (context, wishlist, child) {
+                        final bool isFav = wishlist.isFavorite(product.id);
+                        return Material(
+                          color: Colors.white.withOpacity(0.9),
+                          shape: const CircleBorder(),
+                          child: InkWell(
+                            customBorder: const CircleBorder(),
+                            onTap: () {
+                              wishlist.toggleFavorite(product.id);
+                              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    isFav
+                                        ? '${product.name} dihapus dari favorit.'
+                                        : '${product.name} ditambahkan ke favorit!',
+                                  ),
+                                  duration: const Duration(seconds: 1),
+                                ),
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(6.0),
+                              child: Icon(
+                                isFav
+                                    ? Icons.favorite_rounded
+                                    : Icons.favorite_border_rounded,
+                                size: 18,
+                                color: isFav ? Colors.red : AppColors.textMuted,
+                              ),
                             ),
                           ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -157,7 +174,8 @@ class ProductCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
-                      color: product.isAvailable ? AppColors.textMuted : Colors.red,
+                      color:
+                          product.isAvailable ? AppColors.textMuted : Colors.red,
                     ),
                   ),
                   ElevatedButton(
@@ -168,11 +186,13 @@ class ProductCard extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
                       minimumSize: Size.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
-                    child: const Icon(Icons.add_shopping_cart_rounded, size: 16),
+                    child:
+                        const Icon(Icons.add_shopping_cart_rounded, size: 16),
                   ),
                 ],
               ),
