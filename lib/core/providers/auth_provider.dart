@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:sayur_hub/core/models/user.dart';
+import 'package:sayur_hub/core/services/profile_photo_service.dart';
 import 'package:sayur_hub/core/services/secure_storage_service.dart';
 
 /// Provider pengelola status autentikasi, sesi login, dan token JWT SayurHub.
@@ -12,6 +13,7 @@ class AuthProvider extends ChangeNotifier {
 
   User? _currentUser;
   String? _token;
+  String? _profilePhotoUrl;
   bool _isAuthenticated = false;
   bool _isLoading = false;
   String? _errorMessage;
@@ -19,6 +21,7 @@ class AuthProvider extends ChangeNotifier {
   // Getters publik
   User? get currentUser => _currentUser;
   String? get token => _token;
+  String? get profilePhotoUrl => _profilePhotoUrl;
   bool get isAuthenticated => _isAuthenticated;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
@@ -159,6 +162,37 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  /// Memperbarui foto profil akun pengguna via multipart upload
+  Future<bool> updateProfilePhoto(
+    String filePath, {
+    void Function(int sent, int total)? onProgress,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final String? newUrl = await ProfilePhotoService.instance.uploadProfilePhoto(
+        filePath: filePath,
+        onProgress: onProgress,
+      );
+
+      if (newUrl != null) {
+        _profilePhotoUrl = newUrl;
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      }
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    } catch (e) {
+      debugPrint('Galat memperbarui foto profil: $e');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   /// Keluar dari sesi dan membersihkan token dari hardware keystore
   Future<void> logout() async {
     _isLoading = true;
@@ -167,6 +201,7 @@ class AuthProvider extends ChangeNotifier {
     await _storageService.clearAuth();
     _token = null;
     _currentUser = null;
+    _profilePhotoUrl = null;
     _isAuthenticated = false;
     _isLoading = false;
     notifyListeners();

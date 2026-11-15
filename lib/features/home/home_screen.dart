@@ -22,6 +22,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool _isSearching = false;
   late final TextEditingController _searchController;
+  late final ScrollController _scrollController;
 
   static const List<String> _categories = [
     'Semua',
@@ -36,11 +37,22 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _searchController = TextEditingController();
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    // Deteksi saat pengguna menggulir mendekati 200 px dari batas bawah
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      context.read<ProductCatalogProvider>().loadMoreProducts();
+    }
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -205,6 +217,7 @@ class _HomeScreenState extends State<HomeScreen> {
               await context.read<ProductCatalogProvider>().fetchCatalog(isRefresh: true);
             },
             child: SingleChildScrollView(
+              controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
@@ -385,23 +398,69 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // 4. Success State: Menampilkan produk hasil fetch API
     final displayedProducts = catalog.products;
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: displayedProducts.length,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
-        childAspectRatio: 0.68,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-      ),
-      itemBuilder: (context, index) {
-        final product = displayedProducts[index];
-        return ProductCard(
-          product: product,
-          onAddToCart: () => _handleAddToCart(product),
-        );
-      },
+    return Column(
+      children: [
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: displayedProducts.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            childAspectRatio: 0.68,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+          ),
+          itemBuilder: (context, index) {
+            final product = displayedProducts[index];
+            return ProductCard(
+              product: product,
+              onAddToCart: () => _handleAddToCart(product),
+            );
+          },
+        ),
+
+        // Indikator Pemuatan Halaman Tambahan (Infinite Scroll)
+        if (catalog.isLoadingMore)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20.0),
+            child: Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    height: 18,
+                    width: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.primaryGreen,
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                  Text(
+                    'Memuat komoditas berikutnya...',
+                    style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+        // Indikator Akhir Halaman Data
+        if (!catalog.hasMore && catalog.products.isNotEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20.0),
+            child: Center(
+              child: Text(
+                '— Seluruh komoditas segar telah ditampilkan —',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textMuted,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
