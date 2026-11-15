@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:sayur_hub/core/routes/app_router.dart';
 import 'package:sayur_hub/core/theme/app_theme.dart';
-import 'package:sayur_hub/features/main_navigation_shell.dart';
 
 void main() {
   runApp(const SayurHubRootApp());
@@ -12,11 +12,11 @@ class SayurHubRootApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'SayurHub',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const MainNavigationShell(),
+      routerConfig: AppRouter.router,
     );
   }
 }

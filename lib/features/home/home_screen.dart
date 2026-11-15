@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:sayur_hub/core/mock/mock_produce_data.dart';
 import 'package:sayur_hub/core/models/product.dart';
 import 'package:sayur_hub/core/theme/app_colors.dart';
@@ -195,13 +196,7 @@ class _HomeScreenState extends State<HomeScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Total belanjaan saat ini: $_totalCartItems item'),
-            ),
-          );
-        },
+        onPressed: () => context.pushNamed('cart'),
         icon: const Icon(Icons.shopping_cart_rounded),
         label: Text('Keranjang ($_totalCartItems)'),
       ),

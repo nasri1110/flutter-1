@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:sayur_hub/core/models/product.dart';
 import 'package:sayur_hub/core/theme/app_colors.dart';
 import 'package:sayur_hub/core/utils/price_calculator.dart';
@@ -25,11 +26,11 @@ class ProductCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Membuka detail ${product.name}...'),
-              duration: const Duration(seconds: 1),
-            ),
+          // Navigasi deklaratif menuju rute detail produk
+          context.pushNamed(
+            'product-detail',
+            pathParameters: {'id': product.id},
+            extra: product,
           );
         },
         child: Padding(
