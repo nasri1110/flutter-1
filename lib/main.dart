@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sayur_hub/core/theme/app_colors.dart';
-import 'package:sayur_hub/features/home/welcome_screen.dart';
+import 'package:sayur_hub/core/theme/app_theme.dart';
+import 'package:sayur_hub/features/home/home_screen.dart';
 
 void main() {
   runApp(const SayurHubRootApp());
@@ -15,16 +15,8 @@ class SayurHubRootApp extends StatelessWidget {
     return MaterialApp(
       title: 'SayurHub',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        scaffoldBackgroundColor: AppColors.backgroundLight,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.primaryGreen,
-          primary: AppColors.primaryGreen,
-          secondary: AppColors.accentOrange,
-        ),
-      ),
-      home: const WelcomeScreen(),
+      theme: AppTheme.lightTheme,
+      home: const HomeScreen(),
     );
   }
 }
