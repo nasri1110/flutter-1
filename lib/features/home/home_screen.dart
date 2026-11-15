@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:sayur_hub/core/mock/mock_produce_data.dart';
 import 'package:sayur_hub/core/models/product.dart';
 import 'package:sayur_hub/core/theme/app_colors.dart';
+import 'package:sayur_hub/core/utils/catalog_processor.dart';
+import 'package:sayur_hub/shared/widgets/category_pill.dart';
 import 'package:sayur_hub/shared/widgets/product_card.dart';
-import 'package:sayur_hub/shared/widgets/quantity_counter_widget.dart';
+import 'package:sayur_hub/shared/widgets/promo_banner.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,7 +16,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _totalCartItems = 0;
-  int _demoQuantity = 1;
+  String _selectedCategory = 'Semua';
 
   void _handleAddToCart(Product product) {
     setState(() {
@@ -24,7 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${product.name} berhasil ditambahkan ke keranjang!'),
+        content: Text('${product.name} dimasukkan ke keranjang belanja!'),
         backgroundColor: AppColors.primaryGreen,
         duration: const Duration(seconds: 1),
       ),
@@ -33,12 +35,29 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Product> sampleProducts = MockProduceData.products;
+    final List<Product> allProducts = MockProduceData.products;
+
+    // Mengambil seluruh kategori unik dan menyematkan filter 'Semua' di awal
+    final List<String> categories = [
+      'Semua',
+      ...CatalogProcessor.getProduceCategories(allProducts),
+    ];
+
+    // Menyaring daftar produk sesuai kategori yang sedang dipilih pengguna
+    final List<Product> displayedProducts = CatalogProcessor.filterProductsByCategory(
+      products: allProducts,
+      categoryName: _selectedCategory,
+    );
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('SayurHub — Pasar Segar'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.search_rounded),
+            tooltip: 'Cari Sayuran',
+            onPressed: () {},
+          ),
           IconButton(
             icon: const Icon(Icons.notifications_none_rounded),
             onPressed: () {},
@@ -68,109 +87,112 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.home_rounded, color: AppColors.primaryGreen),
-              title: const Text('Beranda'),
+              title: const Text('Katalog Beranda'),
               onTap: () => Navigator.pop(context),
             ),
           ],
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Banner Sambutan
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                color: AppColors.primaryGreen.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.primaryGreen.withOpacity(0.2)),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
-                          'Sayur Segar Panen Pagi!',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primaryGreen),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Dipetik langsung dari kebun hidroponik mitra Lembang.',
-                          style: TextStyle(fontSize: 12, color: AppColors.textMuted),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(Icons.eco_rounded, size: 40, color: AppColors.primaryGreen),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          // Menentukan jumlah kolom secara dinamis sesuai lebar layar perangkat
+          final double screenWidth = constraints.maxWidth;
+          final int crossAxisCount = screenWidth >= 900
+              ? 4
+              : screenWidth >= 600
+                  ? 3
+                  : 2;
 
-            // Demo Interaksi StatefulWidget: QuantityCounterWidget
-            Text(
-              'Uji Coba Kontrol Kuantitas (StatefulWidget):',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 15),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade300),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Kuantitas Uji: $_demoQuantity kg', style: const TextStyle(fontWeight: FontWeight.bold)),
-                  QuantityCounterWidget(
-                    maxStock: 10,
-                    initialQuantity: _demoQuantity,
-                    onQuantityChanged: (newVal) {
-                      setState(() {
-                        _demoQuantity = newVal;
-                      });
+          return SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 1. Banner Promosi Panen Raya
+                const PromoBanner(
+                  discountTag: 'DISKON PANEN 25%',
+                  title: 'Panen Sayur Segar Lembang',
+                  subtitle: 'Sayuran organik bebas pestisida dipetik langsung pagi hari ini.',
+                  iconData: Icons.eco_rounded,
+                ),
+                const SizedBox(height: 20),
+
+                // 2. Baris Filter Kategori Horizontal
+                Text(
+                  'Kategori Pilihan:',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 16),
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: 42,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: categories.length,
+                    separatorBuilder: (context, index) => const SizedBox(width: 8),
+                    itemBuilder: (context, index) {
+                      final category = categories[index];
+                      return CategoryPill(
+                        label: category,
+                        isSelected: _selectedCategory == category,
+                        onTap: () {
+                          setState(() {
+                            _selectedCategory = category;
+                          });
+                        },
+                      );
                     },
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
+                ),
+                const SizedBox(height: 20),
 
-            // Bagian Katalog Produk (Komponen Reusable ProductCard)
-            Text(
-              'Komoditas Pilihan Hari Ini:',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 17),
-            ),
-            const SizedBox(height: 12),
-
-            // Menampilkan Kartu Produk Berdampingan
-            SizedBox(
-              height: 240,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: sampleProducts.length,
-                separatorBuilder: (context, index) => const SizedBox(width: 12),
-                itemBuilder: (context, index) {
-                  final product = sampleProducts[index];
-                  return SizedBox(
-                    width: 165,
-                    child: ProductCard(
-                      product: product,
-                      onAddToCart: () => _handleAddToCart(product),
+                // 3. Header Informasi Jumlah Komoditas
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Katalog Komoditas (${displayedProducts.length}):',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 16),
                     ),
-                  );
-                },
-              ),
+                    Text(
+                      'Grid: $crossAxisCount Kolom',
+                      style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // 4. GridView Katalog Responsif
+                if (displayedProducts.isEmpty)
+                  Container(
+                    height: 200,
+                    width: double.infinity,
+                    alignment: Alignment.center,
+                    child: const Text('Tidak ada produk pada kategori ini.'),
+                  )
+                else
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: displayedProducts.length,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      childAspectRatio: 0.68,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                    ),
+                    itemBuilder: (context, index) {
+                      final product = displayedProducts[index];
+                      return ProductCard(
+                        product: product,
+                        onAddToCart: () => _handleAddToCart(product),
+                      );
+                    },
+                  ),
+                const SizedBox(height: 32),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
