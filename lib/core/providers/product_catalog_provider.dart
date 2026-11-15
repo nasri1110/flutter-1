@@ -1,16 +1,21 @@
 import 'package:flutter/foundation.dart';
 import 'package:sayur_hub/core/models/product.dart';
-import 'package:sayur_hub/core/services/product_api_service.dart';
+import 'package:sayur_hub/features/catalog/data/models/product_model.dart';
+import 'package:sayur_hub/features/catalog/data/repositories/product_repository_impl.dart';
+import 'package:sayur_hub/features/catalog/domain/entities/product_entity.dart';
+import 'package:sayur_hub/features/catalog/domain/usecases/get_products_usecase.dart';
 
 /// Status siklus hidup permintaan jaringan katalog
 enum CatalogStatus { initial, loading, success, error }
 
-/// Provider pengelola state katalog produk SayurHub yang bersumber dari REST API
+/// Provider pengelola state katalog produk SayurHub pada Presentation Layer
+/// Menggunakan Clean Architecture: Hanya berkomunikasi dengan Domain Layer melalui Use Case.
 class ProductCatalogProvider extends ChangeNotifier {
-  final ProductApiService _apiService;
+  final GetProductsUseCase _getProductsUseCase;
 
-  ProductCatalogProvider({ProductApiService? apiService})
-      : _apiService = apiService ?? ProductApiService();
+  ProductCatalogProvider({GetProductsUseCase? getProductsUseCase})
+      : _getProductsUseCase = getProductsUseCase ??
+            GetProductsUseCase(ProductRepositoryImpl());
 
   List<Product> _products = [];
   CatalogStatus _status = CatalogStatus.initial;
@@ -30,9 +35,8 @@ class ProductCatalogProvider extends ChangeNotifier {
   bool get isError => _status == CatalogStatus.error;
   bool get isEmpty => _status == CatalogStatus.success && _products.isEmpty;
 
-  /// Memuat katalog produk dari REST API
+  /// Memuat katalog produk melalui eksekusi GetProductsUseCase
   Future<void> fetchCatalog({bool isRefresh = false}) async {
-    // Jika bukan refresh layar (pull-to-refresh), aktifkan status loading
     if (!isRefresh) {
       _status = CatalogStatus.loading;
       _errorMessage = null;
@@ -40,12 +44,13 @@ class ProductCatalogProvider extends ChangeNotifier {
     }
 
     try {
-      final List<Product> result = await _apiService.getProducts(
+      final List<ProductEntity> entities = await _getProductsUseCase.call(
         category: _selectedCategory,
         search: _searchQuery,
       );
 
-      _products = result;
+      // Konversi domain entities ke Product model yang dipahami UI
+      _products = entities.map((e) => ProductModel.fromEntity(e).toProduct()).toList();
       _status = CatalogStatus.success;
       _errorMessage = null;
     } catch (e) {
@@ -56,7 +61,7 @@ class ProductCatalogProvider extends ChangeNotifier {
     }
   }
 
-  /// Mengubah filter kategori dan memuat ulang data dari API
+  /// Mengubah filter kategori dan memuat ulang use case
   void setCategory(String category) {
     if (_selectedCategory == category) return;
     _selectedCategory = category;
