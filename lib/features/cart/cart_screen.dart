@@ -91,9 +91,7 @@ class CartScreen extends StatelessWidget {
               text: 'Lanjutkan ke Checkout Alamat',
               icon: Icons.arrow_forward_rounded,
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Formulir Checkout akan diimplementasikan pada Modul 13!')),
-                );
+                context.pushNamed('checkout');
               },
             ),
           ],

@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sayur_hub/core/models/product.dart';
 import 'package:sayur_hub/features/cart/cart_screen.dart';
 import 'package:sayur_hub/features/catalog/product_detail_screen.dart';
+import 'package:sayur_hub/features/checkout/checkout_screen.dart';
 import 'package:sayur_hub/features/main_navigation_shell.dart';
 import 'package:sayur_hub/shared/widgets/not_found_screen.dart';
 
@@ -38,6 +39,12 @@ class AppRouter {
             path: 'cart',
             name: 'cart',
             builder: (context, state) => const CartScreen(),
+          ),
+          // Rute Formulir Checkout Pengiriman: /checkout
+          GoRoute(
+            path: 'checkout',
+            name: 'checkout',
+            builder: (context, state) => const CheckoutScreen(),
           ),
         ],
       ),
