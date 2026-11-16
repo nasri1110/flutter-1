@@ -1,0 +1,16 @@
+# ==============================================================================
+# SAYURHUB - ANDROID RELEASE KEY PROPERTIES TEMPLATE
+# ==============================================================================
+# PERINGATAN KEAMANAN:
+# 1. JANGAN PERNAH menyertakan file 'key.properties' yang asli ke dalam Git!
+# 2. Simpan file 'upload-keystore.jks' di tempat yang aman (misal: password manager
+#    atau secure CI/CD vault seperti GitHub Secrets).
+# 3. Salin file template ini menjadi 'key.properties' pada direktori android/:
+#    cp key.properties.example key.properties
+# 4. Ganti nilai-nilai di bawah ini dengan kredensial keystore produksi Anda.
+# ==============================================================================
+
+storePassword=SayurHubSecretPassword2026!
+keyPassword=SayurHubSecretPassword2026!
+keyAlias=sayurhub-key
+storeFile=/home/arif/flutter-1/sayur_hub/android/app/upload-keystore.jks
