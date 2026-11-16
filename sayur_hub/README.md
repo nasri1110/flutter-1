@@ -153,10 +153,18 @@ sayur_hub/
    dart bin/modul_22_capstone_demo.dart
    ```
 
-5. **Jalankan Aplikasi di Emulator / Perangkat Fisik**:
-   ```bash
-   flutter run
-   ```
+5. **Jalankan Aplikasi**:
+   - Web Server (WSL / Browser): `flutter run -d web-server --web-port 8080 --web-hostname 0.0.0.0`
+   - Mobile / Emulator: `flutter run`
+
+### 🔑 Kredensial Akun Demo Praktikum:
+Aplikasi SayurHub telah dilengkapi dua akun demo bawaan untuk pengujian alur bisnis:
+* **Akun Konsumen (Customer)**:
+  - Email: `siti@smkrpl.sch.id` | Password: `password123`
+  - Akses: Belanja sayur, keranjang, checkout, dan pelacakan pesanan.
+* **Akun Administrator (Gudang & Toko)**:
+  - Email: `admin@sayurhub.id` | Password: `admin123`
+  - Akses: Menu Profil > Panel Kontrol Gudang (Audit Stok 450 kg, Status REST API, Pelacakan Armada Kurir).
 
 ---
 

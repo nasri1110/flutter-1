@@ -320,6 +320,15 @@ Jalankan aplikasi visual SayurHub ke target perangkat:
   flutter run
   ```
 
+#### Skenario Kredensial Uji Coba Pengguna (Multi-Role):
+Saat membuka halaman Login, siswa dapat memilih salah satu peran untuk pengujian:
+1. **Peran Konsumen (Customer)**:
+   - *Email*: `siti@smkrpl.sch.id` | *Password*: `password123`
+   - *Fokus Pengujian*: Alur pemilihan sayur di katalog, penambahan ke keranjang, dan formulir checkout pengiriman.
+2. **Peran Administrator Gudang & Toko (Admin)**:
+   - *Email*: `admin@sayurhub.id` | *Password*: `admin123`
+   - *Fokus Pengujian*: Membuka tab Profil untuk mengakses **Panel Kontrol Gudang**, audit inventori stok 450 kg, pemantauan status API server, dan armada pengiriman kurir.
+
 ---
 
 ### Langkah 4: Membangun Dokumentasi Portofolio `README.md`

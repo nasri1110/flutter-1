@@ -300,8 +300,38 @@ class AuthProvider extends ChangeNotifier {
 
     await Future.delayed(const Duration(milliseconds: 1200)); // Simulasi latensi jaringan
 
-    if (email.trim().toLowerCase() == 'siti@smkrpl.sch.id' && password == 'password123') {
-      const String mockJwtToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+    // 1. Kredensial Administrator Gudang & Toko
+    if (email.trim().toLowerCase() == 'admin@sayurhub.id' && password == 'admin123') {
+      const String mockJwtToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBRE0tMDAxIiwibmFtZSI6IkFkbWluIFNheXVySHViIiwicm9sZSI6ImFkbWluIn0...';
+
+      final user = User(
+        id: 'ADM-001',
+        fullName: 'Budi Santoso (Admin Gudang)',
+        phoneNumber: '081198765432',
+        email: 'admin@sayurhub.id',
+        address: 'Sentra Distribusi SayurHub Lembang, Bandung',
+        role: 'admin',
+      );
+
+      await _storageService.saveUserSession(
+        token: mockJwtToken,
+        id: user.id,
+        name: user.fullName,
+        email: user.email!,
+        phone: user.phoneNumber,
+        address: user.address,
+      );
+
+      _token = mockJwtToken;
+      _currentUser = user;
+      _isAuthenticated = true;
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    }
+    // 2. Kredensial Konsumen (Customer)
+    else if (email.trim().toLowerCase() == 'siti@smkrpl.sch.id' && password == 'password123') {
+      const String mockJwtToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJVU1ItMDAxIiwibmFtZSI6IlNpdGkgTnVyaGFsaXphIiwicm9sZSI6ImN1c3RvbWVyIn0...';
 
       final user = User(
         id: 'USR-001',
@@ -309,6 +339,7 @@ class AuthProvider extends ChangeNotifier {
         phoneNumber: '081234567890',
         email: email.trim(),
         address: 'Jl. Merdeka No. 45, Bandung Barat',
+        role: 'customer',
       );
 
       await _storageService.saveUserSession(
@@ -328,6 +359,7 @@ class AuthProvider extends ChangeNotifier {
       return true;
     } else {
       _isLoading = false;
+      _errorMessage = 'Email/Password salah! Demo: siti@smkrpl.sch.id atau admin@sayurhub.id';
       notifyListeners();
       return false;
     }
@@ -469,12 +501,13 @@ android {
 3. Jika pengguna belum login, tampilkan tombol ajakan masuk akun.
 4. Jika sudah login, tampilkan data pengguna riil, badge token JWT aktif, dan tombol keluar akun (*Logout*) disertai dialog konfirmasi.
 
-### Langkah 7: Pengujian Menyeluruh Skenario Route Guard
+### Langkah 7: Pengujian Menyeluruh Skenario Route Guard & Multi-Role
 1. Buka aplikasi, masukkan bayam ke keranjang belanja, lalu buka `CartScreen`.
 2. Tekan tombol **"Lanjutkan ke Checkout Alamat"**.
 3. Amati bagaimana Route Guard secara otomatis menghadang dan mengalihkan Anda ke halaman `LoginScreen`!
-4. Tekan tombol bantuan praktikum *"Isi Akun Demo Praktikum (Siti)"*, lalu tekan **"Masuk Sekarang"**.
-5. Amati bagaimana aplikasi secara cerdas langsung mengantarkan Anda kembali ke halaman `CheckoutScreen` untuk menyelesaikan pesanan!
+4. Di halaman `LoginScreen`, siswa dapat menguji dua skenario peran (*role*):
+   - **Peran Konsumen (Customer)**: Tekan tombol bantuan *"Demo Customer"* (`siti@smkrpl.sch.id` / `password123`), lalu klik *"Masuk Sekarang"*. Amati bagaimana aplikasi secara cerdas langsung mengantarkan Anda kembali ke halaman `CheckoutScreen` untuk menyelesaikan pesanan!
+   - **Peran Administrator Gudang**: Tekan tombol bantuan *"Demo Admin"* (`admin@sayurhub.id` / `admin123`), lalu klik *"Masuk Sekarang"*. Buka menu **Profil** di pojok kanan bawah, dan amati munculnya badge emas `ROLE: ADMINISTRATOR` serta **Panel Kontrol Gudang & Toko** untuk memantau stok komoditas dan status API!
 
 ---
 

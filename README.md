@@ -92,9 +92,26 @@ dart bin/modul_22_capstone_demo.dart
 ```
 
 ### 5. Jalankan Aplikasi
-```bash
-flutter run
-```
+- **Web Server (WSL / Browser Komputer)**:
+  ```bash
+  flutter run -d web-server --web-port 8080 --web-hostname 0.0.0.0
+  ```
+- **Smartphone Android Fisik / Emulator**:
+  ```bash
+  flutter run
+  ```
+
+---
+
+## 🔑 Kredensial Akun Demo Praktikum
+
+Untuk pengujian fitur login dan otentikasi JWT:
+- **Akun Konsumen (Customer)**:
+  - Email: `siti@smkrpl.sch.id` | Kata Sandi: `password123`
+  - Hak Akses: Belanja katalog sayur, keranjang belanja, checkout alamat, riwayat pesanan.
+- **Akun Administrator Gudang (Admin)**:
+  - Email: `admin@sayurhub.id` | Kata Sandi: `admin123`
+  - Hak Akses: Tab Profil > Panel Kontrol Gudang & Toko (Audit Stok 450 kg, Status REST API, Pelacakan Armada Kurir).
 
 ---
 
