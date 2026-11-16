@@ -303,6 +303,25 @@ dart bin/modul_22_capstone_demo.dart
 
 ---
 
+### Langkah 3b: Menjalankan Aplikasi SayurHub secara Interaktif
+Jalankan aplikasi visual SayurHub ke target perangkat:
+- **Di Web Server Ringan (Rekomendasi Lingkungan WSL / Lab Komputer)**:
+  ```bash
+  flutter config --enable-web
+  flutter run -d web-server --web-port 8080 --web-hostname 0.0.0.0
+  ```
+  Lalu buka peramban web pada alamat: `http://localhost:8080`.
+- **Di Google Chrome (Desktop)**:
+  ```bash
+  flutter run -d chrome
+  ```
+- **Di Smartphone Android Fisik atau Emulator**:
+  ```bash
+  flutter run
+  ```
+
+---
+
 ### Langkah 4: Membangun Dokumentasi Portofolio `README.md`
 Buat berkas `README.md` di root direktori project `sayur_hub/` yang memuat deskripsi produk, matriks 20 fitur, diagram arsitektur, panduan instalasi, dan sertifikasi kredit akademik (lihat struktur pada Bagian D.4). Sertakan pula berkas lisensi terbuka `LICENSE` bertipe MIT.
 

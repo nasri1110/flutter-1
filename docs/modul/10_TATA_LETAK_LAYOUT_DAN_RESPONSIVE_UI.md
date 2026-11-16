@@ -225,7 +225,7 @@ class PromoBanner extends StatelessWidget {
     super.key,
     required this.title,
     required this.subtitle,
-    required this.discountTag,
+    this.discountTag = 'PROMO SPESIAL',
     this.iconData = Icons.eco_rounded,
   });
 
@@ -339,10 +339,15 @@ class CategoryPill extends StatelessWidget {
 
   const CategoryPill({
     super.key,
-    required this.label,
+    String? label,
+    String? categoryName,
     required this.isSelected,
-    required this.onTap,
-  });
+    VoidCallback? onTap,
+    VoidCallback? onSelected,
+  })  : label = label ?? categoryName ?? '',
+        onTap = onTap ?? onSelected ?? _defaultOnTap;
+
+  static void _defaultOnTap() {}
 
   @override
   Widget build(BuildContext context) {

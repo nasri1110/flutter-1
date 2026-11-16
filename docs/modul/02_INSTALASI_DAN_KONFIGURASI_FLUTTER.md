@@ -392,12 +392,23 @@ Jika Anda menggunakan smartphone Android fisik (sangat dianjurkan):
    ```bash
    flutter pub get
    ```
-4. Jalankan aplikasi ke perangkat smartphone yang terhubung:
-   ```bash
-   flutter run
-   ```
-5. Tunggu proses kompilasi Gradle pertama kali selesai (proses ini membutuhkan waktu 1–3 menit pada build perdana untuk mengunduh pustaka Gradle wrapper).
-6. *Hasil yang diharapkan*: Layar smartphone Anda menyala menampilkan aplikasi **SayurHub** dengan AppBar hijau, ikon daun, dan teks sambutan "Selamat Datang di SayurHub!".
+4. Jalankan aplikasi ke target perangkat:
+   - **Opsi A (Smartphone Android / Emulator)**:
+     ```bash
+     flutter run
+     ```
+   - **Opsi B (Web Browser Google Chrome)**:
+     ```bash
+     flutter run -d chrome
+     ```
+   - **Opsi C (Web Server Ringan — Sangat Direkomendasikan di WSL / Server)**:
+     ```bash
+     flutter config --enable-web
+     flutter run -d web-server --web-port 8080 --web-hostname 0.0.0.0
+     ```
+     Lalu buka browser di komputer/laptop Anda pada alamat: `http://localhost:8080`.
+5. Tunggu proses kompilasi pertama kali selesai.
+6. *Hasil yang diharapkan*: Layar perangkat/browser Anda menyala menampilkan aplikasi **SayurHub** dengan AppBar hijau, ikon daun, dan teks sambutan "Selamat Datang di SayurHub!".
 7. Lakukan uji coba fitur **Stateful Hot Reload**:
    - Ubah baris teks `'Selamat Datang di SayurHub!'` menjadi `'SayurHub — Belanja Sayur Segar Mudah!'`.
    - Simpan file (`Ctrl + S`) atau tekan tombol huruf `r` di jendela terminal.

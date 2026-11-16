@@ -226,6 +226,33 @@ class ApiClient {
       ),
     );
   }
+
+  /// Generator simulasi respon REST API berspesifikasi JSON standar industri
+  Response? _generateMockResponse(RequestOptions options) {
+    final String path = options.path;
+
+    if (path.contains('/products')) {
+      final List<Map<String, dynamic>> productJsonList =
+          MockProduceData.products.map((p) => p.toJson()).toList();
+
+      return Response(
+        requestOptions: options,
+        statusCode: 200,
+        data: {
+          'status': 'success',
+          'code': 200,
+          'message': 'Daftar katalog sayur dan buah berhasil dimuat dari API',
+          'data': productJsonList,
+          'meta': {
+            'total_items': productJsonList.length,
+            'server_time': DateTime.now().toIso8601String(),
+          },
+        },
+      );
+    }
+
+    return null;
+  }
 }
 ```
 
