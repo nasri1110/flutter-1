@@ -228,6 +228,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     title: 'PANEN RAYA PETANI LEMBANG',
                     subtitle:
                         'Dapatkan potongan langsung 10% untuk pesanan minimal Rp 50.000.',
+                    discountTag: 'DISKON 10%',
                   ),
                   const SizedBox(height: 20),
 

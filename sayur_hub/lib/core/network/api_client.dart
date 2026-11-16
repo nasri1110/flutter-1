@@ -74,17 +74,6 @@ class ApiClient {
       ),
     );
   }
-            final mockResponse = _generateMockResponse(e.requestOptions);
-            if (mockResponse != null) {
-              return handler.resolve(mockResponse);
-            }
-          }
-
-          return handler.next(e);
-        },
-      ),
-    );
-  }
 
   /// Generator simulasi respon REST API berspesifikasi JSON standar industri
   Response? _generateMockResponse(RequestOptions options) {

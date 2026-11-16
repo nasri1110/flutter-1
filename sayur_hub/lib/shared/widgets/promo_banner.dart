@@ -12,7 +12,7 @@ class PromoBanner extends StatelessWidget {
     super.key,
     required this.title,
     required this.subtitle,
-    required this.discountTag,
+    this.discountTag = 'PROMO SPESIAL',
     this.iconData = Icons.eco_rounded,
   });
 

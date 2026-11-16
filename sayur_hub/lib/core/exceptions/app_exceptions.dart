@@ -29,3 +29,20 @@ class InsufficientStockException extends AppException {
 class InvalidUserDataException extends AppException {
   InvalidUserDataException(String message) : super(message, 'ERR_INVALID_USER');
 }
+
+/// Dilempar saat terjadi kegagalan jaringan atau komunikasi REST API
+class NetworkException extends AppException {
+  NetworkException(String message, [String? detailCode])
+      : super(message, detailCode ?? 'ERR_NETWORK');
+}
+
+/// Dilempar saat komoditas produk tidak ditemukan di sistem
+class ProductNotFoundException extends AppException {
+  final String productId;
+
+  ProductNotFoundException(this.productId)
+      : super(
+          'Produk dengan ID $productId tidak ditemukan dalam katalog.',
+          'ERR_PRODUCT_NOT_FOUND',
+        );
+}
