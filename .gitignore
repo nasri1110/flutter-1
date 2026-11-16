@@ -1,0 +1,40 @@
+# ==============================================================================
+# FLUTTER-1 ROOT GITIGNORE
+# ==============================================================================
+
+# 1. Assignment Prompt (TIDAK BOLEH DI-PUSH KE REPOSITORI)
+prompt.md
+prompt*.md
+
+# 2. Dart & Flutter Build Artifacts & Caches
+**/build/
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.packages
+**/.pub-cache/
+**/.pub/
+
+# 3. Android Keystore Secrets & Credentials
+**/android/**/gradle-wrapper.jar
+**/android/.gradle
+**/android/captures/
+**/android/gradlew
+**/android/gradlew.bat
+**/android/local.properties
+**/android/**/GeneratedPluginRegistrant.java
+**/android/key.properties
+*.jks
+*.keystore
+*.p12
+*.mobileprovision
+
+# 4. IDE, Editor & OS Artifacts
+.DS_Store
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+*.swp
+*.log
