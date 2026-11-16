@@ -210,26 +210,55 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 12),
 
-                // Tombol Bantuan Demo Akun Siswa
-                OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                // Tombol Bantuan Demo Akun Siswa & Admin
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        icon: const Icon(Icons.person_outline_rounded,
+                            color: AppColors.primaryGreen, size: 18),
+                        label: const Text(
+                          'Demo Customer',
+                          style: TextStyle(color: AppColors.textDark, fontSize: 12),
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _emailController.text = 'siti@smkrpl.sch.id';
+                            _passwordController.text = 'password123';
+                          });
+                        },
+                      ),
                     ),
-                  ),
-                  icon: const Icon(Icons.flash_on_rounded,
-                      color: AppColors.accentOrange, size: 20),
-                  label: const Text(
-                    'Isi Akun Demo Praktikum (Siti)',
-                    style: TextStyle(color: AppColors.textDark, fontSize: 13),
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _emailController.text = 'siti@smkrpl.sch.id';
-                      _passwordController.text = 'password123';
-                    });
-                  },
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        icon: const Icon(Icons.admin_panel_settings_outlined,
+                            color: AppColors.accentOrange, size: 18),
+                        label: const Text(
+                          'Demo Admin',
+                          style: TextStyle(color: AppColors.textDark, fontSize: 12),
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _emailController.text = 'admin@sayurhub.id';
+                            _passwordController.text = 'admin123';
+                          });
+                        },
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 24),
 

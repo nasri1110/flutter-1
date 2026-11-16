@@ -69,8 +69,37 @@ class AuthProvider extends ChangeNotifier {
     await Future.delayed(const Duration(milliseconds: 1200));
 
     try {
-      // Validasi kredensial (Contoh kredensial demo untuk praktikum siswa)
-      if (email.trim().toLowerCase() == 'siti@smkrpl.sch.id' && password == 'password123') {
+      // Validasi kredensial (Akun Demo Customer & Admin)
+      if (email.trim().toLowerCase() == 'admin@sayurhub.id' && password == 'admin123') {
+        const String mockJwtToken =
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBRE0tMDAxIiwibmFtZSI6IkFkbWluIFNheXVySHViIiwicm9sZSI6ImFkbWluIiwiZXhwIjoxODAwMDAwMDAwfQ.sEcUrE_AdMiN_sAyUrHuB_2026';
+
+        final user = User(
+          id: 'ADM-001',
+          fullName: 'Budi Santoso (Admin Gudang)',
+          phoneNumber: '081198765432',
+          email: 'admin@sayurhub.id',
+          address: 'Sentra Distribusi SayurHub Lembang, Bandung',
+          role: 'admin',
+        );
+
+        await _storageService.saveUserSession(
+          token: mockJwtToken,
+          id: user.id,
+          name: user.fullName,
+          email: user.email!,
+          phone: user.phoneNumber,
+          address: user.address,
+        );
+
+        _token = mockJwtToken;
+        _currentUser = user;
+        _isAuthenticated = true;
+        _errorMessage = null;
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      } else if (email.trim().toLowerCase() == 'siti@smkrpl.sch.id' && password == 'password123') {
         const String mockJwtToken =
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJVU1ItMDAxIiwibmFtZSI6IlNpdGkgTnVyaGFsaXphIiwiZW1haWwiOiJzaXRpQHNta3JwbC5zY2guaWQiLCJyb2xlIjoiY3VzdG9tZXIiLCJleHAiOjE4MDAwMDAwMDB9.sEcUrE_SiGnAtUrE_sAyUrHuB_2026';
 
@@ -80,6 +109,7 @@ class AuthProvider extends ChangeNotifier {
           phoneNumber: '081234567890',
           email: email.trim(),
           address: 'Jl. Merdeka No. 45, Bandung Barat',
+          role: 'customer',
         );
 
         // Simpan token dan profil ke hardware keystore
@@ -100,7 +130,7 @@ class AuthProvider extends ChangeNotifier {
         notifyListeners();
         return true;
       } else {
-        _errorMessage = 'Email atau kata sandi tidak valid. Coba: siti@smkrpl.sch.id / password123';
+        _errorMessage = 'Email/Password salah! Demo: siti@smkrpl.sch.id / password123 atau admin@sayurhub.id / admin123';
         _isLoading = false;
         notifyListeners();
         return false;

@@ -236,33 +236,147 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 12),
 
-            // Badge Status Autentikasi JWT Terenkripsi
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: AppColors.primaryGreen.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(20),
-                border:
-                    Border.all(color: AppColors.primaryGreen.withOpacity(0.3)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.verified_user_rounded,
-                      size: 16, color: AppColors.primaryGreen),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Sesi JWT Aktif (${auth.token != null ? auth.token!.substring(0, 15) : "Terverifikasi"}...)',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primaryGreen,
+            // Badge Status Autentikasi JWT & Role
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 8,
+              runSpacing: 6,
+              children: [
+                if (user?.isAdmin == true)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.shade100,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.amber.shade700),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.shield_rounded, size: 16, color: Colors.amber.shade900),
+                        const SizedBox(width: 6),
+                        Text(
+                          'ROLE: ADMINISTRATOR',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.amber.shade900,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryGreen.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border:
+                        Border.all(color: AppColors.primaryGreen.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.verified_user_rounded,
+                          size: 16, color: AppColors.primaryGreen),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Sesi JWT Aktif (${auth.token != null ? auth.token!.substring(0, 15) : "Terverifikasi"}...)',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primaryGreen,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
+
+            // Panel Khusus Administrator Gudang (Jika Login Sebagai Admin)
+            if (user?.isAdmin == true) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.orange.shade800, Colors.deepOrange.shade600],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.orange.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: const [
+                        Icon(Icons.admin_panel_settings_rounded, color: Colors.white, size: 22),
+                        SizedBox(width: 8),
+                        Text(
+                          'PANEL KONTROL GUDANG & TOKO',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Pusat kendali operasional komoditas SayurHub:',
+                      style: TextStyle(color: Colors.white70, fontSize: 12),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _buildAdminChip(
+                          icon: Icons.inventory_2_rounded,
+                          label: 'Audit Stok (450 kg)',
+                          onTap: () => _showAdminDialog(
+                            context,
+                            '📦 Audit Inventori & Stok Gudang',
+                            '• Total Komoditas: 12 Jenis Sayur & Buah\n• Stok Siap Kirim: 450 kg\n• Mutu Panen Segar: 98.4%\n• Gudang Utama: Lembang, Jawa Barat\n• Petani Mitra Terhubung: 34 Petani Lokal',
+                          ),
+                        ),
+                        _buildAdminChip(
+                          icon: Icons.cloud_done_rounded,
+                          label: 'Status API: Normal',
+                          onTap: () => _showAdminDialog(
+                            context,
+                            '🌐 Status Jaringan & REST API',
+                            '• HTTP Client: Dio v5.4.3+1\n• Base URL: https://api.sayurhub.smkrpl.sch.id/api/v1\n• Database Offline: SQLite (Active)\n• Keystore Security: Android AES-256 Hardware Encrypted',
+                          ),
+                        ),
+                        _buildAdminChip(
+                          icon: Icons.delivery_dining_rounded,
+                          label: 'Armada Pengiriman',
+                          onTap: () => _showAdminDialog(
+                            context,
+                            '🛵 Armada Distribusi Kurir',
+                            '• Pesanan Diproses: 18 Pesanan Hari Ini\n• Kurir Bertugas: 4 Armada Motor Listrik\n• Rata-rata Waktu Tiba: 45 Menit Pasca Panen',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
 
             ListTile(
               leading: const Icon(Icons.location_on_outlined,
@@ -315,36 +429,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _showLogoutDialog(BuildContext context) {
+  Widget _buildAdminChip({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.white.withOpacity(0.2),
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: Colors.white, size: 16),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showAdminDialog(BuildContext context, String title, String message) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Keluar dari Akun?'),
-        content: const Text(
-          'Token JWT akan dihapus dari FlutterSecureStorage. Anda perlu masuk kembali untuk melakukan pemesanan.',
-        ),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        content: Text(message, style: const TextStyle(height: 1.5)),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Batal'),
-          ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
+              backgroundColor: AppColors.primaryGreen,
               foregroundColor: Colors.white,
             ),
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await context.read<AuthProvider>().logout();
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Anda telah berhasil keluar dari akun.'),
-                  ),
-                );
-              }
-            },
-            child: const Text('Ya, Keluar'),
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Tutup Panel'),
           ),
         ],
       ),
